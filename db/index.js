@@ -4,8 +4,8 @@ let connection;
 let database;
 
 async function initDatabase() {
-    connection = await MongoClient.connect('mongodb://ff-backend:ff-pwd@192.168.4.99:30519/ff');
-    database = connection.db('ff');
+    connection = await MongoClient.connect(process.env.MONGO_URL);
+    database = connection.db(process.env.MONGO_DB);
 }
 
 function getDatabase()
