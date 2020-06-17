@@ -1,4 +1,5 @@
 const restify = require('restify');
+const createLightship = require('lightship').createLightship;
 const corsMiddleware = require('restify-cors-middleware');
 const auth = require('./routes/auth');
 const queries = require('./routes/queries');
@@ -37,8 +38,16 @@ server.get('/budget', auth.authenticate, budgets.fetch);
 
 server.post('/login', auth.login);
 
+let lightship = createLightship();
+
+lightship.registerShutdownHandler(() => {
+    server.close();
+    database.closeDatabase();
+})
+
 database.initDatabase().then(() => {
     server.listen(8080, () => {
+        lightship.signalReady();
         console.log('%s listening at %s', server.name, server.url);
     });
 });
