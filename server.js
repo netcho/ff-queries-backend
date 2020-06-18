@@ -28,8 +28,9 @@ server.use(cors.actual);
 
 server.get('/queries', auth.authenticate, queries.list);
 server.post('/query', auth.authenticate, queries.add);
-server.put('/query/:id', auth.authenticate, queries.update);
 server.get('/query/:id', auth.authenticate, queries.fetch);
+server.put('/query/:id', auth.authenticate, queries.update);
+server.del('/query/:id', auth.authenticate, queries.remove);
 
 server.get('/contragents', auth.authenticate, contragents.list);
 

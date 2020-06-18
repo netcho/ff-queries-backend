@@ -91,6 +91,19 @@ function update(req, res) {
     });
 }
 
+function remove(req, res) {
+    let queries = db.getDatabase().collection('queries');
+    queries.deleteOne({_id: new ObjectID(req.params.id)}).then((result) => {
+        if (result.deletedCount) {
+            res.send(204);
+        }
+        else {
+            res.send(404);
+        }
+    }).catch((err) => {
+        console.error(err);
+        res.send(500)
+    });
+}
 
-
-module.exports = { list, add, fetch, update };
+module.exports = { list, add, fetch, update, remove };
