@@ -33,6 +33,7 @@ server.put('/query/:id', auth.authenticate, queries.update);
 server.del('/query/:id', auth.authenticate, queries.remove);
 
 server.get('/contragents', auth.authenticate, contragents.list);
+server.get('/categories', auth.authenticate, queries.listCategories);
 
 server.get('/budgets', auth.authenticate, budgets.list);
 server.get('/budget', auth.authenticate, budgets.fetch);
