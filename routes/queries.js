@@ -34,7 +34,6 @@ function list(req, res) {
     queries.find(req.user.role === 'admin' ? {} : {createdBy: req.user._id }).toArray().then((queries) => {
         if(queries) {
             queries.forEach((query) => {
-                query.companies = getCompaniesFromActivities(query);
                 query.totalSum = calculateTotalSumVAT(query);
             });
 
