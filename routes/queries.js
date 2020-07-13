@@ -7,7 +7,7 @@ function getCompaniesFromActivities(query) {
 
     query.activities.forEach((activity, index, activities) => {
         if(!companies.includes(activity.company)) {
-            companies += activity.company + ' ЕООД';
+            companies += activity.company;
 
             if(index !== (activities.length -1)) {
                 companies += ', ';
