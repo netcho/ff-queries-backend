@@ -30,7 +30,7 @@ function authenticate(req, res, next) {
     }
 
     try {
-        jwt.verify(req.header('Authorization'), '848f5468342ff453adqdjio');
+        req.user = jwt.verify(req.header('Authorization'), '848f5468342ff453adqdjio');
         next();
     } catch (e) {
         res.send(401);

@@ -7,7 +7,7 @@ function getCompaniesFromActivities(query) {
 
     query.activities.forEach((activity, index, activities) => {
         if(!companies.includes(activity.company)) {
-            companies += activity.company;
+            companies += activity.company + ' ЕООД';
 
             if(index !== (activities.length -1)) {
                 companies += ', ';
@@ -31,7 +31,7 @@ function calculateTotalSumVAT(query) {
 
 function list(req, res) {
     const queries = db.getDatabase().collection('queries');
-    queries.find({}).toArray().then((queries) => {
+    queries.find({createdBy: req.user._id }).toArray().then((queries) => {
         if(queries) {
             queries.forEach((query) => {
                 query.companies = getCompaniesFromActivities(query);
