@@ -49,6 +49,10 @@ const fetchPipeline = [
         totalSum: { $ceil: '$totalSum' }
     }
     },
+    { $sort: {
+        _id: 1
+    }
+    },
     { $group: {
         _id: null,
         queries: { $addToSet: '$$ROOT' },
