@@ -107,10 +107,10 @@ function remove(req, res) {
 }
 
 function listCategories(req, res) {
-    const queries = db.getDatabase().collection('queries');
-    queries.distinct('category', {}).then((result) => {
-        if (result) {
-            res.send(200, result);
+    const categories = db.getDatabase().collection('categories');
+    categories.find({}).toArray().then((categories) => {
+        if (categories) {
+            res.send(200, categories);
         }
         else {
             res.send(200, []);
