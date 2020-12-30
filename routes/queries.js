@@ -31,7 +31,7 @@ function calculateTotalSumVAT(query) {
 
 function list(req, res) {
     const queries = db.getDatabase().collection('queries');
-    queries.find(req.user.role === 'admin' ? {} : {createdBy: req.user._id }, { sort: [['_id', -1]]}).toArray().
+    queries.find(req.user.permissions.query.readAll ? {} : { createdBy: req.user._id }, { sort: [['_id', -1]]}).toArray().
     then((queries) => {
         if(queries) {
             queries.forEach((query) => {

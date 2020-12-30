@@ -5,6 +5,7 @@ const auth = require('./routes/auth');
 const queries = require('./routes/queries');
 const budgets = require('./routes/budgets');
 const contragents = require('./routes/contragents');
+const users = require('./routes/users');
 const database = require('./db');
 
 const cors = corsMiddleware({
@@ -39,6 +40,13 @@ server.get('/budgets', auth.authenticate, budgets.list);
 server.get('/budget', auth.authenticate, budgets.fetch);
 
 server.post('/login', auth.login);
+
+server.get('/users', auth.authenticate, users.list);
+server.post('/user', auth.authenticate, users.add);
+server.get('/user/:id', auth.authenticate, users.fetch);
+server.put('/user/:id', auth.authenticate, users.update);
+
+server.get('/users/permissions', auth.authenticate, users.listPermissions);
 
 let lightship = createLightship();
 

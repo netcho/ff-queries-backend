@@ -2,6 +2,16 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const db = require('../db');
 
+function loadPermissions(user, permissions) {
+    user.permissions = {};
+    Object.keys(permissions).forEach((category) => {
+        user.permissions[category] = {};
+        permissions[category].forEach((action) => {
+            user.permissions[category][action] = true;
+        });
+    });
+}
+
 function login(req, res) {
     let database = db.getDatabase();
     let users = database.collection('users');
@@ -31,6 +41,7 @@ function authenticate(req, res, next) {
 
     try {
         req.user = jwt.verify(req.header('Authorization'), '848f5468342ff453adqdjio');
+        loadPermissions(req.user, req.user.permissions);
         next();
     } catch (e) {
         res.send(401);
