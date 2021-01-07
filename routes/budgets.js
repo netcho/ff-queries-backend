@@ -91,17 +91,18 @@ function list(req, res) {
 
 function fetch(req, res) {
     const queries = db.getDatabase().collection('queries');
-    let lastDate = moment({ year: parseInt(req.query.year, 10)});
-    //lastDate.set();
-    //lastDate.year(parseInt(req.query.year, 10));
-    lastDate.week(parseInt(req.query.week, 10) === 1 ? 2 : req.query.week);
-    lastDate.day('Thursday');
-    let firstDate = moment({ year: parseInt(req.query.year, 10)});
-    //firstDate.set();
-    //firstDate.year(parseInt(req.query.year, 10));
-    firstDate.week(parseInt(req.query.week, 10) === 1 ? 1 : req.query.week - 1);
-    firstDate.day('Friday');
-    let pipeline = [ { $match: { payDate: { $gte: firstDate.format('YYYY-MM-DD'), $lte: lastDate.format('YYYY-MM-DD') }, isUrgent: false } } ];
+    let year = parseInt(req.query.year, 10);
+    let lastDate = moment();
+    let week1 = parseInt(req.query.week, 10);
+    lastDate.set('year', year);
+    lastDate.isoWeek(week1);
+    lastDate.isoWeekday(4);
+    /*let firstDate = moment();
+    let week2 = parseInt(req.query.week, 10) - 1;
+    firstDate.set('year', year);
+    firstDate.isoWeek(week2);
+    firstDate.isoWeekday(5);*/
+    let pipeline = [ { $match: { payDate: lastDate.format('GGGG-MM-DD')/*{ $gte: firstDate.format('GGGG-MM-DD'), $lte: lastDate.format('GGGG-MM-DD') }*/, isUrgent: false } } ];
     queries.aggregate(pipeline.concat(fetchPipeline)).next().
     then((budget) => {
         if (budget) {
