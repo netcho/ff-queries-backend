@@ -109,11 +109,12 @@ function fetch(req, res) {
             res.send(200, budget);
         }
         else {
-            res.send(200, {});
+            res.send(200, []);
         }
     }).
     catch((err) => {
         res.send(500);
+        console.error(err);
     });
 }
 

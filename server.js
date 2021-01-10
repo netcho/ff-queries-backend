@@ -5,6 +5,7 @@ const auth = require('./routes/auth');
 const queries = require('./routes/queries');
 const budgets = require('./routes/budgets');
 const contragents = require('./routes/contragents');
+const inquiry = require('./routes/inquiry');
 const users = require('./routes/users');
 const database = require('./db');
 
@@ -38,6 +39,8 @@ server.get('/categories', auth.authenticate, queries.listCategories);
 
 server.get('/budgets', auth.authenticate, budgets.list);
 server.get('/budget', auth.authenticate, budgets.fetch);
+
+server.get('/inquiry', auth.authenticate, inquiry.processInquiry);
 
 server.post('/login', auth.login);
 
