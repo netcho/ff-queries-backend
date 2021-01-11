@@ -3,13 +3,15 @@ const db = require('../db');
 function addCategorySum(category) {
     return {
         $sum: {
-            $reduce: {
-                input: "$activities",
-                initialValue: 0,
-                in: {
-                    $add: [ '$$value', { $cond: { if: { $in: [ category, "$type" ] }, then: { $round: [ { $multiply: [ '$$this.price', 1.2 ] }, 2 ] }, else: 0 } } ]
+            $round: [{
+                $reduce: {
+                    input: "$activities",
+                    initialValue: 0,
+                    in: {
+                        $add: [ '$$value', { $cond: { if: { $in: [ category, "$type" ] }, then: { $round: [ { $multiply: [ '$$this.price', 1.2 ] }, 2 ] }, else: 0 } } ]
+                    }
                 }
-            }
+            }, 2]
         }
     }
 }
@@ -19,7 +21,10 @@ function processInquiry(req, res) {
     let pipeline = [{ $addFields: { categorySubcode: "$category.subcode" } }, { $match: { payDate: { $gte: req.query.startDate, $lte: req.query.endDate } } }];
 
     if (req.query.hasOwnProperty('categorySubcodes')) {
-        pipeline.push({ $match: { $expr: {  $in: [ "$categorySubcode", req.query.categorySubcodes ] } } });
+        let subcodes = req.query.categorySubcodes.map(function (subcode) {
+            return Number.parseInt(subcode, 10);
+        });
+        pipeline.push({ $match: { $expr: {  $in: [ "$categorySubcode", subcodes ] } } });
     }
 
     if (req.query.hasOwnProperty('companies')) {
@@ -33,6 +38,10 @@ function processInquiry(req, res) {
             repairsSum: addCategorySum('Repair'),
             supportSum: addCategorySum('Support'),
             transportSum: addCategorySum('Transport')
+        }
+    }, {
+        $sort: {
+            "_id": 1
         }
     });
 
