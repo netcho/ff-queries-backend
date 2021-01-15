@@ -2,30 +2,26 @@ const moment = require('moment');
 const db = require('../db');
 
 const listPipeline = [
-    { $match: { isUrgent: false } },
     { $unwind: '$activities' },
     { $project: {
         payDate: true,
         "activities.price": true,
-        year: {
-            $year: {
-                    $toDate: "$payDate"
-                }
-            }
     }},
     { $group: {
-        _id: { $add: [ { $isoWeek: { $toDate: '$payDate' } }, { $cond: [ { $gt: [ { $isoDayOfWeek: { $toDate: '$payDate' } }, 4 ] }, 1, 0 ] } ] },
+        _id: '$payDate',
         totalSum: {
             $sum: {
                 $round: [ { $multiply: [ '$activities.price', 1.2 ] }, 2 ]
             }
         },
-        year: { $min: '$year' }
-    }
+        year: { $min: { $year: { $toDate: '$payDate' } } },
+        week: { $min: { $isoWeek: { $toDate: '$payDate' } } }
+        }
     },
     { $project: {
-        _id: true,
+        id: true,
         year: true,
+        week: true,
         totalSum: { $ceil: '$totalSum' }
         }
     },
@@ -75,7 +71,8 @@ const fetchPipeline = [
 
 function list(req, res) {
     const queries = db.getDatabase().collection('queries');
-    queries.aggregate(listPipeline).toArray().
+    let matchStage = [ { $match: { isUrgent: false } } ];
+    queries.aggregate(matchStage.concat(listPipeline)).toArray().
     then((queries) => {
         if (queries) {
             res.send(200, queries);
@@ -85,24 +82,28 @@ function list(req, res) {
         }
     }).
     catch((err) => {
+        console.error(err);
         res.send(500);
     });
 }
 
 function fetch(req, res) {
     const queries = db.getDatabase().collection('queries');
-    let year = parseInt(req.query.year, 10);
-    let lastDate = moment();
-    let week1 = parseInt(req.query.week, 10);
-    lastDate.set('year', year);
-    lastDate.isoWeek(week1);
-    lastDate.isoWeekday(4);
-    /*let firstDate = moment();
-    let week2 = parseInt(req.query.week, 10) - 1;
-    firstDate.set('year', year);
-    firstDate.isoWeek(week2);
-    firstDate.isoWeekday(5);*/
-    let pipeline = [ { $match: { payDate: lastDate.format('GGGG-MM-DD')/*{ $gte: firstDate.format('GGGG-MM-DD'), $lte: lastDate.format('GGGG-MM-DD') }*/, isUrgent: false } } ];
+
+    let pipeline = [];
+
+    if (req.query.isUrgent === 'true') {
+        pipeline.push({$match: { payDate: req.query.payDate, isUrgent: true } });
+    }
+    else {
+        let lastDate = moment();
+        let year = parseInt(req.query.year, 10);
+        let week1 = parseInt(req.query.week, 10);
+        lastDate.set('year', year);
+        lastDate.isoWeek(week1);
+        lastDate.isoWeekday(4);
+        pipeline.push({ $match: { payDate: lastDate.format('GGGG-MM-DD'), isUrgent: false } });
+    }
     queries.aggregate(pipeline.concat(fetchPipeline)).next().
     then((budget) => {
         if (budget) {
@@ -118,4 +119,47 @@ function fetch(req, res) {
     });
 }
 
-module.exports = { list, fetch };
+function listUrgent(req, res) {
+    const queries = db.getDatabase().collection('queries');
+    let matchStage = [ { $match: { isUrgent: true } } ];
+    queries.aggregate(matchStage.concat(listPipeline)).toArray().
+    then((budgets) => {
+        if (budgets) {
+            let lastYear = 0;
+            let lastWeek = 0;
+            let count = 1;
+
+            let result = budgets.map((budget) => {
+                let budgetNumbered = Object.assign({}, budget);
+                if (lastYear === budget.year) {
+                    if (lastWeek === budget.week) {
+                        count++;
+                    }
+                    else {
+                        count = 1;
+                        lastWeek = budget.week;
+                    }
+                }
+                else {
+                    count = 1;
+                    lastYear = budget.year;
+                }
+
+                budgetNumbered.number = count;
+
+                return budgetNumbered;
+            })
+
+            res.send(200, result);
+        }
+        else {
+            res.send(200, []);
+        }
+    }).
+    catch((err) => {
+        res.send(500);
+        console.error(err);
+    })
+}
+
+module.exports = { list, listUrgent, fetch };

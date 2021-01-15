@@ -38,6 +38,7 @@ server.get('/contragents', auth.authenticate, contragents.list);
 server.get('/categories', auth.authenticate, queries.listCategories);
 
 server.get('/budgets', auth.authenticate, budgets.list);
+server.get('/budgets/urgent', auth.authenticate, budgets.listUrgent);
 server.get('/budget', auth.authenticate, budgets.fetch);
 
 server.get('/inquiry', auth.authenticate, inquiry.processInquiry);
